@@ -46,7 +46,7 @@ resource "aws_instance" "basic_vm" {
   instance_type = var.instance_type
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
   # Attach security group here
-  vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
+  vpc_security_group_ids = [aws_security_group.allow_http.id]
 
   user_data = <<-EOF
   #!/bin/bash
