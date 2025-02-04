@@ -45,20 +45,6 @@ resource "aws_instance" "basic_vm" {
   ami           = var.ami
   instance_type = var.instance_type
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
-
-  tags = {
-    Name = "MyBasicVM"
-  }
-}
-
-# Create an EC2 Instance
-resource "aws_instance" "basic_vm" {
-  ami           = var.ami
-  instance_type = var.instance_type
-
-  # (Optional) If you want SSH access:
-  key_name = "devops-testin.pem"
-
   # Attach security group here
   vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
 
@@ -71,11 +57,7 @@ resource "aws_instance" "basic_vm" {
   echo "Reverse Proxy Webserver" | sudo tee /var/www/html/index.html
   EOF
 
-
-
-  # Add a Name tag
   tags = {
     Name = "MyBasicVM"
   }
-
 }
