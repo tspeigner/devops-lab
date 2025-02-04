@@ -1,0 +1,63 @@
+name: Infrastructure Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures all files are pulled
+
+      - name: Debug Current Path
+        run: pwd
+
+      - name: Debug Repo Structure
+        run: ls -R
+
+      - name: Debug Terraform Directory
+        run: ls -al tf/basic-vm/
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure Terraform Cloud Credentials
+        run: echo "credentials \"app.terraform.io\" { token = \"${{ secrets.TERRAFORM_CLOUD_API_TOKEN }}\" }" > ~/.terraformrc
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./tf/basic-vm
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: ./tf/basic-vm
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./tf/basic-vm
+                  
+  ansible:
+    name: Ansible Deployment
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: sudo apt update && sudo apt install -y ansible
+
+      - name: Deploy Using Ansible
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+          ansible-playbook -i tf/basic-vm/inventory.ini --private-key private_key.pem ansible/deploy.yml
