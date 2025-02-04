@@ -7,14 +7,6 @@ terraform {
     }
   }
   required_version = ">= 1.0"
-
-  cloud {
-    organization = "AVM-PVMH"
-
-    workspaces {
-      name = "devops-lab-environment"
-    }
-  }
 }
 
 # Configure AWS Provider
