@@ -24,9 +24,6 @@ jobs:
       - name: Debug Repo Structure
         run: ls -R
 
-      - name: Debug Terraform Directory
-        run: ls -al tf/basic-vm/
-
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -35,15 +32,15 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./tf/basic-vm
+        working-directory: .
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: ./tf/basic-vm
+        working-directory: .
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
-        working-directory: ./tf/basic-vm
+        working-directory: .
                   
   ansible:
     name: Ansible Deployment
