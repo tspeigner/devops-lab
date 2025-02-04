@@ -16,45 +16,28 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensures all files are pulled
+          fetch-depth: 0
 
-      - name: Debug Current Path
-        run: pwd
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Change if needed
 
-      - name: Debug Repo Structure
-        run: ls -R
-
-      - name: Install Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.4.5
 
-      - name: Configure Terraform Cloud Credentials
-        run: echo "credentials \"app.terraform.io\" { token = \"${{ secrets.TERRAFORM_CLOUD_API_TOKEN }}\" }" > ~/.terraformrc
-
-      - name: Terraform Init
+      - name: Initialize Terraform
         run: terraform init
-        working-directory: .
+        working-directory: ./terraform
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: .
+        working-directory: ./terraform
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
-        working-directory: .
-                  
-  ansible:
-    name: Ansible Deployment
-    needs: terraform
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Install Ansible
-        run: sudo apt update && sudo apt install -y ansible
-
-      - name: Deploy Using Ansible
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
-          ansible-playbook -i tf/basic-vm/inventory.ini --private-key private_key.pem ansible/deploy.yml
+        working-directory: ./terraform
